@@ -11,22 +11,22 @@ import org.slf4j.LoggerFactory;
 
 import flink.testing.constants.StateConstants;
 
-public class MapToLong extends RichMapFunction<String, Long> {
+public class MapToLongStateful extends RichMapFunction<String, Long> {
 	private static final long serialVersionUID = 8776389351071032372L;
-	private static final Logger log = LoggerFactory.getLogger(MapToLong.class);
+	private static final Logger log = LoggerFactory.getLogger(MapToLongStateful.class);
 
 	private transient MapState<String, Long> state;
 	private int maxIntToKeep = 10;
 
-	private MapToLong() {
+	private MapToLongStateful() {
 	}
 	
-	public static MapToLong build() {
-		return new MapToLong();
+	public static MapToLongStateful build() {
+		return new MapToLongStateful();
 	}
 	
-	public static MapToLong build(int maxIntToKeep) {
-		MapToLong instance = build();
+	public static MapToLongStateful build(int maxIntToKeep) {
+		MapToLongStateful instance = build();
 		instance.maxIntToKeep = maxIntToKeep;
 		return instance;
 	}
