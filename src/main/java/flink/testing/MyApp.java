@@ -1,16 +1,15 @@
 package flink.testing;
 
-import org.apache.flink.api.common.JobID;
-import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.CheckpointConfig.ExternalizedCheckpointCleanup;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import flink.testing.constants.StateConstants;
 
 
 public class MyApp {
@@ -40,8 +39,8 @@ public class MyApp {
 		/**
 		 * Configure the runtime environment. 
 		 */
-		env.enableCheckpointing(1000, CheckpointingMode.EXACTLY_ONCE);
-		env.setStateBackend(new HashMapStateBackend());
+		env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
+		env.setStateBackend(new HashMapStateBackend());	
 		env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
 		env.getCheckpointConfig().enableExternalizedCheckpoints(
 			    ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
@@ -49,12 +48,14 @@ public class MyApp {
 		/**
 		 * Configure DAG. 
 		 */
-		DataStream<Long> minusOne = env.fromSequence(0, maxGeneratedNumber)
-				.map(MapToString.build())
-				.keyBy(value -> value.length())
-				.map(MapToLongStateful.build(maxStateSaved));
+		DataStream<Long> stream = env.fromSequence(0, maxGeneratedNumber)
+				.map(LongToString.build())
+				.uid(StateConstants.LongToString)
+				.keyBy(value -> value.getInternalLong())
+				.flatMap(StringToLongStateful.build(maxStateSaved))
+				.uid(StateConstants.StringToLong);
 
-		minusOne.print();
+		stream.print();
         env.executeAsync(MyApp.class.getSimpleName());
 
 	}
