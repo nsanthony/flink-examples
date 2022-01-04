@@ -21,7 +21,7 @@ public class MyApp {
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		
 		/**
-		 * Configure the runtim paramenters
+		 * Configure the runtime parameters
 		 */
 		int maxGeneratedNumber = 1000;
 		int maxStateSaved = 10;
@@ -45,10 +45,15 @@ public class MyApp {
 		env.getCheckpointConfig().enableExternalizedCheckpoints(
 			    ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
 		
+		env.setParallelism(2); //creating a 2 parallel job because it is cool. 
+		
 		/**
 		 * Configure DAG. 
 		 */
-		DataStream<Long> stream = env.fromSequence(0, maxGeneratedNumber)
+		DataStream<Long> firstStream = env.fromSequence(0, maxGeneratedNumber);
+		DataStream<Long> secondStream = env.fromSequence(0, maxGeneratedNumber);
+		
+		DataStream<Long> stream = firstStream.union(firstStream, secondStream)
 				.map(LongToString.build())
 				.uid(StateConstants.LongToString)
 				.keyBy(value -> value.getInternalLong())

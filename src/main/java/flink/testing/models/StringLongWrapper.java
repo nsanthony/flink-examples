@@ -1,15 +1,21 @@
 package flink.testing.models;
 
+import java.io.Serializable;
+
 import lombok.Data;
 
 @Data
-public class StringLongWrapper {
+public class StringLongWrapper implements Serializable{
 	
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 154235876570872896L;
 	private Long internalLong = null;
 	private String internalString = null;
 	
-	private StringLongWrapper() {}
+	public StringLongWrapper() {}
 	
 	public static StringLongWrapper build(Long newLong) {
 		StringLongWrapper newWrapper = new StringLongWrapper();
