@@ -1,7 +1,13 @@
 package flink.testing;
 
+import org.apache.flink.api.common.JobID;
+import org.apache.flink.core.execution.JobClient;
+import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
+import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.environment.CheckpointConfig;
+import org.apache.flink.streaming.api.environment.CheckpointConfig.ExternalizedCheckpointCleanup;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,10 +19,11 @@ public class MyApp {
 
 	public static void main(String[] args) throws Exception {
 				
-		RandomStrings randomStrings = RandomStrings.build();
+		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		
-		randomStrings.randomWord();
-		
+		/**
+		 * Configure the runtim paramenters
+		 */
 		int maxGeneratedNumber = 1000;
 		int maxStateSaved = 10;
 		
@@ -29,18 +36,26 @@ public class MyApp {
 			log.info("Using default count up number of %s", maxGeneratedNumber);
 		}
 		
+
+		/**
+		 * Configure the runtime environment. 
+		 */
+		env.enableCheckpointing(1000, CheckpointingMode.EXACTLY_ONCE);
+		env.setStateBackend(new HashMapStateBackend());
+		env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
+		env.getCheckpointConfig().enableExternalizedCheckpoints(
+			    ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
 		
-		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-		env.enableCheckpointing(100, CheckpointingMode.EXACTLY_ONCE);
-		
+		/**
+		 * Configure DAG. 
+		 */
 		DataStream<Long> minusOne = env.fromSequence(0, maxGeneratedNumber)
 				.map(MapToString.build())
 				.keyBy(value -> value.length())
 				.map(MapToLongStateful.build(maxStateSaved));
 
 		minusOne.print();
-        
-        env.execute("My App");
+        env.executeAsync(MyApp.class.getSimpleName());
 
 	}
 	

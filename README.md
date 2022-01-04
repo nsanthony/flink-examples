@@ -8,6 +8,8 @@ cd k8s
 kubectl port-forward <jobmanager-pod-name> 8081:8081
 ```
 
+To see the flink UI go to `http://localhost:8081/`. 
+
 To stop the flink cluster (from the k8s/ directory)
 ```bash
 ./stop.sh

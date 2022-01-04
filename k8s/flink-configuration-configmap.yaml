@@ -14,7 +14,15 @@ data:
     queryable-state.proxy.ports: 6125
     jobmanager.memory.process.size: 2600m
     taskmanager.memory.process.size: 2728m
-    parallelism.default: 1     
+    parallelism.default: 1    
+
+    # State Options
+    state.backend: hashmap
+    # Optional, Flink will automatically default to JobManagerCheckpointStorage
+    # when no checkpoint directory is specified.
+    state.checkpoint-storage: jobmanager 
+    state.backend.local-recovery: true
+
   log4j-console.properties: |+
     # This affects logging for both user code and Flink
     rootLogger.level = INFO
