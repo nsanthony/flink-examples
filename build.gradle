@@ -1,0 +1,109 @@
+buildscript {
+    repositories {
+        jcenter() // this applies only to the Gradle 'Shadow' plugin
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:5.0.0'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'application'
+    id "io.freefair.lombok" version "6.0.0-m2"
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+    
+}
+
+
+repositories {
+    mavenCentral()
+    maven { url "https://repository.apache.org/content/repositories/snapshots/" }
+}
+
+
+group = 'flink.testing'
+version = '0.1.0'
+mainClassName = 'flink.testing.MyApp'
+description = 'Testing flink'
+
+ext {
+    javaVersion = '1.8'
+	flinkVersion = '1.12.1'
+    scalaBinaryVersion = '2.11'
+    
+    slf4jVersion = '1.7.15'
+    log4jVersion = '2.17.1'
+}
+
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+applicationDefaultJvmArgs = ["-Dlog4j.configurationFile=log4j2.properties"]
+
+configurations {
+    flinkShadowJar // dependencies which go into the shadowJar
+
+    // always exclude these (also from transitive dependencies) since they are provided by Flink
+    flinkShadowJar.exclude group: 'org.apache.flink', module: 'force-shading'
+    flinkShadowJar.exclude group: 'com.google.code.findbugs', module: 'jsr305'
+    flinkShadowJar.exclude group: 'org.slf4j'
+    flinkShadowJar.exclude group: 'org.apache.logging.log4j'
+}
+
+
+
+dependencies {
+    // --------------------------------------------------------------
+    // Compile-time dependencies that should NOT be part of the
+    // shadow jar and are provided in the lib folder of Flink
+    // --------------------------------------------------------------
+    compile "org.apache.flink:flink-streaming-java_2.11:${flinkVersion}"
+    compile "org.apache.flink:flink-clients_2.11:${flinkVersion}"
+
+    // --------------------------------------------------------------
+    // Dependencies that should be part of the shadow jar, e.g.
+    // connectors. These must be in the flinkShadowJar configuration!
+    // --------------------------------------------------------------
+    //flinkShadowJar "org.apache.flink:flink-connector-kafka:${flinkVersion}"
+
+    compile "org.apache.logging.log4j:log4j-api:${log4jVersion}"
+    compile "org.apache.logging.log4j:log4j-core:${log4jVersion}"
+    compile "org.apache.logging.log4j:log4j-slf4j-impl:${log4jVersion}"
+    compile "org.slf4j:slf4j-log4j12:${slf4jVersion}"
+
+    
+    implementation group: 'org.fluentd', name: 'fluent-logger', version: '0.3.3'
+    implementation 'com.google.flogger:flogger-system-backend:0.5.1'
+
+    implementation 'com.google.code.gson:gson:2.8.5'
+}
+
+
+sourceSets {
+    main.compileClasspath += configurations.flinkShadowJar
+    main.runtimeClasspath += configurations.flinkShadowJar
+
+    test.compileClasspath += configurations.flinkShadowJar
+    test.runtimeClasspath += configurations.flinkShadowJar
+
+    javadoc.classpath += configurations.flinkShadowJar
+}
+
+run.classpath = sourceSets.main.runtimeClasspath
+
+
+jar {
+    manifest {
+        attributes 'Built-By': System.getProperty('user.name'),
+                'Build-Jdk': System.getProperty('java.version'),
+                "Main-Class": "$mainClassName"
+    }
+}
+
+shadowJar {
+    configurations = [project.configurations.flinkShadowJar]
+}
