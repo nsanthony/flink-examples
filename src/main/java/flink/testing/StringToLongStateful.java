@@ -58,11 +58,11 @@ public class StringToLongStateful extends RichFlatMapFunction<StringLongWrapper,
 	public void flatMap(StringLongWrapper value, Collector<Long> out) throws Exception {
 		if(state.contains(value)) {
 			log.info("Already seen string of value " + value);
-		}else if(value.getInternalLong() <= maxIntToKeep) {
+		}else if(value.getWrappedLong() <= maxIntToKeep) {
 			log.info("New value of " + value);
-			state.put(value, value.getInternalLong());
+			state.put(value, value.getWrappedLong());
 		}
-		out.collect(value.getInternalLong());
+		out.collect(value.getWrappedLong());
 	}
 
 

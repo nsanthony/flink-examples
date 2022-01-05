@@ -1,5 +1,6 @@
 package flink.testing;
 
+import org.apache.flink.api.java.utils.ParameterTool;
 import org.apache.flink.runtime.state.hashmap.HashMapStateBackend;
 import org.apache.flink.runtime.state.storage.JobManagerCheckpointStorage;
 import org.apache.flink.streaming.api.CheckpointingMode;
@@ -9,7 +10,7 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import flink.testing.constants.StateConstants;
+import flink.testing.constants.JobConfigConstants;
 
 
 public class MyApp {
@@ -20,32 +21,27 @@ public class MyApp {
 				
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 		
+		ParameterTool parameter = ParameterTool.fromArgs(args);
+		
 		/**
 		 * Configure the runtime parameters
 		 */
-		int maxGeneratedNumber = 1000;
+		int maxGeneratedNumber = 100000000;
 		int maxStateSaved = 10;
 		
-		if(args.length  > 1) {
-			maxGeneratedNumber = Integer.valueOf(args[0]);
-			log.info("Setting max count up to " + maxGeneratedNumber);
-			maxStateSaved = Integer.valueOf(args[1]);
-			log.info("Setting the max count to save in state to " + maxStateSaved);
-		}else {
-			log.info("Using default count up number of %s", maxGeneratedNumber);
-		}
-		
+		maxGeneratedNumber = Integer.valueOf(parameter.get(JobConfigConstants.GENERATION, "100000000"));
+		maxStateSaved = Integer.valueOf(parameter.get(JobConfigConstants.GENERATION, "10"));
+
 
 		/**
 		 * Configure the runtime environment. 
 		 */
-		env.enableCheckpointing(5000, CheckpointingMode.EXACTLY_ONCE);
+		env.enableCheckpointing(10000, CheckpointingMode.EXACTLY_ONCE);
 		env.setStateBackend(new HashMapStateBackend());	
 		env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
 		env.getCheckpointConfig().enableExternalizedCheckpoints(
 			    ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
 		
-		env.setParallelism(2); //creating a 2 parallel job because it is cool. 
 		
 		/**
 		 * Configure DAG. 
@@ -53,14 +49,13 @@ public class MyApp {
 		DataStream<Long> firstStream = env.fromSequence(0, maxGeneratedNumber);
 		DataStream<Long> secondStream = env.fromSequence(0, maxGeneratedNumber);
 		
-		DataStream<Long> stream = firstStream.union(firstStream, secondStream)
+		firstStream.union(firstStream, secondStream)
 				.map(LongToString.build())
-				.uid(StateConstants.LongToString)
-				.keyBy(value -> value.getInternalLong())
+				.keyBy(wrappedLong -> wrappedLong.wrappedLong)
 				.flatMap(StringToLongStateful.build(maxStateSaved))
-				.uid(StateConstants.StringToLong);
+				.addSink(new CustomSinkFunction());
 
-		stream.print();
+
         env.executeAsync(MyApp.class.getSimpleName());
 
 	}
