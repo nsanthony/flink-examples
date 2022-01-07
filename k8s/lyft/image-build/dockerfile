@@ -1,0 +1,9 @@
+FROM apache/flink:1.14.2-scala_2.11
+
+# Prepare environment
+ENV MAVEN_HOME=/opt/maven
+ENV PATH=$MAVEN_HOME/bin:$PATH
+COPY . /code
+WORKDIR /code
+
+CMD ["help"]
