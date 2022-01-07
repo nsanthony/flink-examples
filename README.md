@@ -3,7 +3,7 @@ set of example flink code and deployment files
 
 To start the flink cluster:
 ```bash
-cd k8s
+cd k8s/custom/
 ./start.sh
 kubectl port-forward <jobmanager-pod-name> 8081:8081
 ```
