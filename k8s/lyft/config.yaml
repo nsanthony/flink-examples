@@ -7,6 +7,6 @@ data:
   # this will need to be templatized
   config: |-
     operator:
-      #ingressUrlFormat: "{{$jobCluster}}.{ingress_suffix}"
+      ingressUrlFormat: "{{$jobCluster}}.10.96.0.1"
     logger:
       level: 4

@@ -5,6 +5,7 @@ To start the flink cluster:
 ```bash
 cd k8s/custom/
 ./start.sh
+k create -f wordcount.yaml
 kubectl port-forward <jobmanager-pod-name> 8081:8081
 ```
 
@@ -14,6 +15,15 @@ To stop the flink cluster (from the k8s/ directory)
 ```bash
 ./stop.sh
 ```
+
+
+To start a flink operator:
+```bash
+cd k8s/lyft/
+./start.sh
+minikube service wordcount-operator-example -n flink-operator
+```
+
 
 To compile and submit the job:
 ```bash
