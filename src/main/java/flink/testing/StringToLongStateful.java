@@ -11,26 +11,21 @@ import org.slf4j.LoggerFactory;
 
 import flink.testing.constants.StateConstants;
 import flink.testing.models.StringLongWrapper;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class StringToLongStateful extends RichFlatMapFunction<StringLongWrapper, Long> {
 	private static final long serialVersionUID = 8776389351071032372L;
 	private static final Logger log = LoggerFactory.getLogger(StringToLongStateful.class);
 
 	private transient MapState<StringLongWrapper, Long> state;
-	private int maxIntToKeep = 10;
 
-	private StringToLongStateful() {
-	}
-	
-	public static StringToLongStateful build() {
-		return new StringToLongStateful();
-	}
-	
-	public static StringToLongStateful build(int maxIntToKeep) {
-		StringToLongStateful instance = build();
-		instance.maxIntToKeep = maxIntToKeep;
-		return instance;
-	}
+	@Builder.Default
+	private int maxIntToKeep = 10;
 	
     @Override
     public void open(Configuration config) {

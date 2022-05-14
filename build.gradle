@@ -29,7 +29,7 @@ description = 'Testing flink'
 
 ext {
     javaVersion = '1.8'
-	flinkVersion = '1.14.2'
+	flinkVersion = '1.14.4'
     scalaBinaryVersion = '2.11'
     
     slf4jVersion = '1.7.15'
@@ -62,8 +62,7 @@ dependencies {
     // shadow jar and are provided in the lib folder of Flink
     // --------------------------------------------------------------
     compile "org.apache.flink:flink-streaming-java_2.11:${flinkVersion}"
-    compile "org.apache.flink:flink-clients_2.11:${flinkVersion}"
-    compile "org.apache.flink:flink-statebackend-rocksdb_2.11:${flinkVersion}"
+    // compile "org.apache.flink:flink-clients:${flinkVersion}"
 
     // --------------------------------------------------------------
     // Dependencies that should be part of the shadow jar, e.g.
@@ -81,6 +80,12 @@ dependencies {
     implementation 'com.google.flogger:flogger-system-backend:0.5.1'
 
     implementation 'com.google.code.gson:gson:2.8.5'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+
+    testCompile "org.apache.flink:flink-test-utils_2.11:${flinkVersion}"
+    testCompile "org.apache.flink:flink-streaming-java_2.11:${flinkVersion}"
 }
 
 

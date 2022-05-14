@@ -52,7 +52,7 @@ public class MyApp {
 		firstStream.union(firstStream, secondStream)
 				.map(LongToString.builder().build())
 				.keyBy(wrappedLong -> wrappedLong.wrappedLong)
-				.flatMap(StringToLongStateful.build(maxStateSaved))
+				.flatMap(StringToLongStateful.builder().maxIntToKeep(maxStateSaved).build())
 				.addSink(new CustomSinkFunction());
 
 

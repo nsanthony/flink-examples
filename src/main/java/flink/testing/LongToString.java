@@ -6,8 +6,10 @@ import org.slf4j.LoggerFactory;
 
 import flink.testing.models.StringLongWrapper;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Builder
+@NoArgsConstructor
 public class LongToString implements MapFunction<Long, StringLongWrapper> {
 	/**
 	 * 
@@ -18,7 +20,9 @@ public class LongToString implements MapFunction<Long, StringLongWrapper> {
 	
 	@Override
 	public StringLongWrapper map(Long value) throws Exception {
-		StringLongWrapper wrappedLong = StringLongWrapper.build(value);
+		StringLongWrapper wrappedLong = StringLongWrapper.builder()
+				.wrappedLong(value)
+				.build();
 		return wrappedLong;
 	}
 
