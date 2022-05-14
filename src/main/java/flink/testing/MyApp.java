@@ -50,7 +50,7 @@ public class MyApp {
 		DataStream<Long> secondStream = env.fromSequence(0, maxGeneratedNumber);
 		
 		firstStream.union(firstStream, secondStream)
-				.map(LongToString.build())
+				.map(LongToString.builder().build())
 				.keyBy(wrappedLong -> wrappedLong.wrappedLong)
 				.flatMap(StringToLongStateful.build(maxStateSaved))
 				.addSink(new CustomSinkFunction());
